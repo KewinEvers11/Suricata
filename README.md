@@ -1,2 +1,2 @@
 # Suricata
-API RESTO en Spring para monitorear precios de productos en la WEB
+API REST para monitorear precios de productos.
