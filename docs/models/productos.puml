@@ -1,0 +1,42 @@
+@startuml
+class SolicitudMonitoreo {
+    - string nombre
+    - enum estado
+    - string urlProducto
+    - string nombreUsuario
+    - string revisor
+}
+
+class ProductoMonitoreado {
+    - uuid uuid
+    - string nombre
+}
+
+class ProductoSitio {
+    - uuid uuid
+    - string sitio
+    - string productoUuid
+    - double ultimoPrecio
+}
+
+class RegistroPrecioProducto {
+    - uuid uuid
+    - double precio
+    - date fecha
+
+}
+
+class ProductoReporte {
+  - uuid uuid
+  - date fechaInicio
+  - date fechaFin
+  - string nombre
+}
+
+
+SolicitudMonitoreo "many" --- "many" ProductoMonitoreado : "Crea"
+ProductoMonitoreado "1" *-- "many" ProductoSitio
+ProductoSitio "1" *-- "many" RegistroPrecioProducto
+ProductoReporte "1" *-- "many" ProductoMonitoreado
+
+@enduml
