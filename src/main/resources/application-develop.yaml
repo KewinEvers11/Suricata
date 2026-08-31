@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/suricata_app
+    username: suricata_appuser
+    password: sur1c4t4
+    driver-class-name: org.postgresql.Driver
+    validationQuery: SELECT 1
+  jpa:
+    show-sql: false
