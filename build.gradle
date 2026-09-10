@@ -29,6 +29,10 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
+	// Source: https://mvnrepository.com/artifact/org.flywaydb/flyway-core
+	implementation 'org.flywaydb:flyway-core:13.5.0'
+	// Source: https://mvnrepository.com/artifact/org.flywaydb/flyway-database-postgresql
+	implementation 'org.flywaydb:flyway-database-postgresql:13.5.0'
 }
 
 tasks.named('test') {
