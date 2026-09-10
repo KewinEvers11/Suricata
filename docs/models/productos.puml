@@ -1,38 +1,56 @@
 @startuml
+
+class EntidadBase {
+    - uuid uuid
+    - timestamp created_at
+    - timestamp updated_at
+}
+
 class SolicitudMonitoreo {
     - string nombre
     - enum estado
     - string urlProducto
     - string nombreUsuario
     - string revisor
+    - uuid uuid
+    - timestamp created_at
+    - timestamp updated_at
 }
 
 class ProductoMonitoreado {
-    - uuid uuid
     - string nombre
+    - string marca
+    - string modelo
+    - uuid uuid
+    - timestamp created_at
+    - timestamp updated_at
 }
 
 class ProductoSitio {
-    - uuid uuid
     - string sitio
     - string productoUuid
     - double ultimoPrecio
+    - uuid uuid
+    - timestamp created_at
+    - timestamp updated_at
 }
 
 class RegistroPrecioProducto {
-    - uuid uuid
     - double precio
     - date fecha
-
+    - uuid uuid
+    - timestamp created_at
+    - timestamp updated_at
 }
 
 class ProductoReporte {
-  - uuid uuid
   - date fechaInicio
   - date fechaFin
   - string nombre
+  - uuid uuid
+  - timestamp created_at
+  - timestamp updated_at
 }
-
 
 SolicitudMonitoreo "many" --- "many" ProductoMonitoreado : "Crea"
 ProductoMonitoreado "1" *-- "many" ProductoSitio
