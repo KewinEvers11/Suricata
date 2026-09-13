@@ -5,7 +5,7 @@ CREATE TABLE solicitud_monitoreo (
     nombre_usuario VARCHAR(255),
     revisor VARCHAR(255),
     estado VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
