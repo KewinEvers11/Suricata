@@ -5,7 +5,7 @@ CREATE TABLE solicitud_monitoreo (
     nombre_usuario VARCHAR(255),
     revisor VARCHAR(255),
     estado VARCHAR(50) NOT NULL,
-    create_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
@@ -50,4 +50,13 @@ ALTER TABLE producto_sitio ADD CONSTRAINT fk_sitio_id
 ALTER TABLE registro_precio_producto ADD CONSTRAINT fk_producto_sitio
     FOREIGN KEY (producto_sitio_id) REFERENCES producto_sitio(id);
 
-
+-- REVERT SCRIPT
+-- DELETE FROM flyway_schema_history WHERE "version" = '1.01';
+-- ALTER TABLE registro_precio_producto DROP CONSTRAINT fk_producto_sitio;
+-- ALTER TABLE producto_sitio DROP CONSTRAINT fk_sitio_id;
+-- ALTER TABLE producto_sitio DROP CONSTRAINT fk_producto_monitoreado_id;
+-- DROP TABLE registro_precio_producto;
+-- DROP TABLE producto_sitio;
+-- DROP TABLE sitio;
+-- DROP TABLE producto_monitoreado;
+-- DROP TABLE solicitud_monitoreo;
