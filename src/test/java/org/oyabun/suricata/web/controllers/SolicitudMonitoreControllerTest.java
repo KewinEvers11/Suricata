@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.oyabun.suricata.exceptions.SolicitudMonitoreoNoEncontradaException;
+import org.oyabun.suricata.models.EstadoSolicitud;
 import org.oyabun.suricata.services.SolicitudMonitoreoService;
 import org.oyabun.suricata.web.model.SolicitudMonitoreoDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -237,6 +240,52 @@ class SolicitudMonitoreControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("Tests obtener solicitud de monitoreo")
+    class testObtenerSolicitudDeMonitoreo {
 
+        @DisplayName("Debería retornar la solicitud con el código correcto cuando existe.")
+        @Test
+        void testObtenerSolicitudDeMonitoreoExistente() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            when(solicitudMonitoreoService.obtenerSolicitudMonitoreo(any(UUID.class)))
+                    .thenReturn(SolicitudMonitoreoDto.builder()
+                            .id(ID_SOLICITUD)
+                            .nombreDeUsuario(NOMBRE_DE_USUARIO)
+                            .nombreProducto(NOMBRE_PRODUCTO)
+                            .urlProducto(URL_PRODUCTO)
+                            .estado(EstadoSolicitud.EN_REVISION.toString())
+                            .build());
+
+            // act / assert
+            mockMvc.perform(get(ENDPOINT + "/{id}", idSolicitud)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(ID_SOLICITUD))
+                    .andExpect(jsonPath("$.nombreProducto").value(NOMBRE_PRODUCTO))
+                    .andExpect(jsonPath("$.urlProducto").value(URL_PRODUCTO))
+                    .andExpect(jsonPath("$.nombreDeUsuario").value(NOMBRE_DE_USUARIO))
+                    .andExpect(jsonPath("$.estado").value(EstadoSolicitud.EN_REVISION.toString()));
+        }
+
+        @DisplayName("Debería retornar NOT_FOUND cuando la solicitud no existe.")
+        @Test
+        void testObtenerSolicitudDeMonitoreoNoExistenteRetornaNotFound() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            when(solicitudMonitoreoService.obtenerSolicitudMonitoreo(idSolicitud))
+                    .thenThrow(new SolicitudMonitoreoNoEncontradaException(idSolicitud));
+
+            // act / assert
+            mockMvc.perform(get(ENDPOINT + "/{id}", idSolicitud)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.mensaje").value("La solicitud de monitoreo con id '" + ID_SOLICITUD + "' no existe"))
+                    .andExpect(jsonPath("$.tipoDeError").value("Not Found"));
+        }
+    }
 
 }
