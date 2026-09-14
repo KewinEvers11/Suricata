@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.oyabun.suricata.services.SolicitudMonitoreoService;
 import org.oyabun.suricata.web.model.SolicitudMonitoreoDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,13 +28,18 @@ public class SolicitudMonitoreoController {
                                                                         UriComponentsBuilder ucb) {
         SolicitudMonitoreoDto solicitudMonitoreoDtoCreada = solicitudMonitoreoService.crearSolicitudMonitoreo(solicitudMonitoreoDto);
         URI location = ucb
-                .path("solicitud-monitoreo/{id}")
+                .path("/solicitud-monitoreo/{id}")
                 .buildAndExpand(solicitudMonitoreoDtoCreada.id())
                 .toUri();
 
         return ResponseEntity
                 .created(location)
                 .body(solicitudMonitoreoDtoCreada);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitudMonitoreoDto> obtenerSolicitudMonitoreo(@PathVariable UUID id) {
+        return ResponseEntity.ok(solicitudMonitoreoService.obtenerSolicitudMonitoreo(id));
     }
 
 }
