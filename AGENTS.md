@@ -1,11 +1,11 @@
 # AGENTS.md
 
-Suricata: REST API for monitoring product prices. Spring Boot 4.1.1, Java 21, single Gradle module (group `org.oyabun`, base package `org.oyabun.suricata`).
+Suricata: REST API for monitoring product prices. Spring Boot 4.1.1, Java 21, single Gradle module (group `org.kwn`, base package `org.kwn.suricata`).
 
 ## Commands
 
 - Verify any change: `./gradlew test` — fast, no DB needed, all current tests are unit or web-slice.
-- Single test: `./gradlew test --tests "org.oyabun.suricata.services.SolicitudMonitoreoServiceImplTest"`
+- Single test: `./gradlew test --tests "org.kwn.suricata.services.SolicitudMonitoreoServiceImplTest"`
 - Full check: `./gradlew build` (same as `test` here; no separate lint/typecheck tasks exist).
 - Run locally: `./gradlew bootRun --args='--spring.profiles.active=develop'` — the `develop` profile is required; there is no datasource config in the default `application.yaml`.
 

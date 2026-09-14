@@ -30,3 +30,7 @@ Para ejecutar el proyecto de forma local, puedes usar Docker.
    ```shell
    docker exec -it suricata-postgres psql -U suricata_appuser -d suricata_app
    ```
+5. Para ejecutar el proyecto con el perfil `develop`:
+   ```shell
+   ./gradlew bootRun --args='--spring.profiles.active=develop'
+   ```
