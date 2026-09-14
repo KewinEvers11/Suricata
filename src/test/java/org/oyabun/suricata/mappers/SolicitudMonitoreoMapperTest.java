@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.oyabun.suricata.models.EstadoSolicitud;
 import org.oyabun.suricata.models.SolicitudMonitoreo;
 import org.oyabun.suricata.web.model.SolicitudMonitoreoDto;
 
@@ -17,7 +18,6 @@ class SolicitudMonitoreoMapperTest {
     static final String NOMBRE_PRODUCTO = "Producto para monitorear";
     static final String URL_PRODUCTO = "www.productos.com";
     static final String NOMBRE_USUARIO = "user1";
-    static final String URL_ENTIDAD = "/solicitudes/sdaijodas";
     static final UUID TEST_UUID = UUID.randomUUID();
 
     @Test
@@ -29,7 +29,7 @@ class SolicitudMonitoreoMapperTest {
                 NOMBRE_PRODUCTO,
                 URL_PRODUCTO,
                 NOMBRE_USUARIO,
-                URL_ENTIDAD);
+                EstadoSolicitud.EN_REVISION.toString());
 
         // act
         SolicitudMonitoreo resultado = solicitudMonitoreoMapper.toEntity(solicitudMonitoreoDto);
@@ -50,7 +50,7 @@ class SolicitudMonitoreoMapperTest {
                         NOMBRE_PRODUCTO,
                         URL_PRODUCTO,
                         NOMBRE_USUARIO,
-                        null,
+                        EstadoSolicitud.EN_REVISION,
                         null
                 );
     }
@@ -64,6 +64,7 @@ class SolicitudMonitoreoMapperTest {
                 .nombre(NOMBRE_PRODUCTO)
                 .urlProducto(URL_PRODUCTO)
                 .nombreUsuario(NOMBRE_USUARIO)
+                .estadoSolicitud(EstadoSolicitud.EN_REVISION)
                 .build();
 
         // act
@@ -77,14 +78,14 @@ class SolicitudMonitoreoMapperTest {
                         SolicitudMonitoreoDto::nombreProducto,
                         SolicitudMonitoreoDto::urlProducto,
                         SolicitudMonitoreoDto::nombreDeUsuario,
-                        SolicitudMonitoreoDto::entityUri
+                        SolicitudMonitoreoDto::estado
                 )
                 .contains(
                         TEST_UUID.toString(),
                         NOMBRE_PRODUCTO,
                         URL_PRODUCTO,
                         NOMBRE_USUARIO,
-                        null
+                        EstadoSolicitud.EN_REVISION.toString()
                 );
     }
 

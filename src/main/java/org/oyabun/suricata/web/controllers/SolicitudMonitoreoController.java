@@ -1,5 +1,6 @@
-package org.oyabun.suricata.web.controller;
+package org.oyabun.suricata.web.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.oyabun.suricata.services.SolicitudMonitoreoService;
 import org.oyabun.suricata.web.model.SolicitudMonitoreoDto;
@@ -15,21 +16,22 @@ import java.net.URI;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/solicitud-monitoreo")
-public class SolicitudMonitoreController {
+public class SolicitudMonitoreoController {
 
     private final SolicitudMonitoreoService solicitudMonitoreoService;
 
     @PostMapping
-    public ResponseEntity<SolicitudMonitoreoDto> crearSolicitudProducto(@RequestBody SolicitudMonitoreoDto solicitudMonitoreoDto,
+    public ResponseEntity<SolicitudMonitoreoDto> crearSolicitudProducto(@RequestBody @Valid SolicitudMonitoreoDto solicitudMonitoreoDto,
                                                                         UriComponentsBuilder ucb) {
         SolicitudMonitoreoDto solicitudMonitoreoDtoCreada = solicitudMonitoreoService.crearSolicitudMonitoreo(solicitudMonitoreoDto);
         URI location = ucb
-                .path("products/{id}")
+                .path("solicitud-monitoreo/{id}")
                 .buildAndExpand(solicitudMonitoreoDtoCreada.id())
                 .toUri();
+
         return ResponseEntity
                 .created(location)
-                .body(solicitudMonitoreoDto);
+                .body(solicitudMonitoreoDtoCreada);
     }
 
 }
