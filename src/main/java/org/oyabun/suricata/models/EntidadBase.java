@@ -1,20 +1,23 @@
 package org.oyabun.suricata.models;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.boot.jaxb.mapping.GenerationTiming;
-import org.springframework.aot.generate.Generated;
-
+import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Setter
+@Getter
 public abstract class EntidadBase {
 
     @Id
