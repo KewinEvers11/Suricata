@@ -24,6 +24,7 @@ Suricata: REST API for monitoring product prices. Spring Boot 4.1.1, Java 21, si
 - Entity↔DTO mapping uses MapStruct with `componentModel = SPRING`. String↔UUID conversion must go through `MapperUtils` via `@Mapping(expression=..., imports={MapperUtils.class})`; MapStruct won't convert them automatically.
 - Lombok is used heavily (`@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`). In `build.gradle`, Lombok must stay before MapStruct on the `annotationProcessor` path — order matters.
 - `docs/models/productos.puml` describes planned entities (`ProductoMonitoreado`, `Sitio`, `ProductoSitio`, `RegistroPrecioProducto`, `ProductoReporte`). Only `SolicitudMonitoreo` is implemented so far.
+- Swagger/OpenAPI: every new or changed endpoint must carry springdoc annotations — `@Tag` (class), `@Operation` + `@ApiResponses` (method) and `@Parameter` (params) on the controller, plus `@Schema` on DTO components. Global API info lives in `OpenAPIConfiguration`. UI at `/suricata-app/swagger-ui/index.html`.
 
 ## Testing
 
