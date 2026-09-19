@@ -1,27 +1,33 @@
 package org.kwn.suricata.services;
 
 import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.kwn.suricata.exceptions.SolicitudMonitoreoNoEncontradaException;
 import org.kwn.suricata.mappers.SolicitudMonitoreoMapper;
 import org.kwn.suricata.models.EstadoSolicitud;
 import org.kwn.suricata.models.SolicitudMonitoreo;
 import org.kwn.suricata.repositories.SolicitudMonitoreoRepository;
-import org.kwn.suricata.web.model.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
+import org.mapstruct.factory.Mappers;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SolicitudMonitoreoServiceImplTest {
@@ -38,6 +44,9 @@ class SolicitudMonitoreoServiceImplTest {
 
     @InjectMocks
     SolicitudMonitoreoServiceImpl solicitudMonitoreoService;
+
+    @Captor
+    ArgumentCaptor<String> nombreParamCaptor;
 
     @DisplayName("Test crearSolicitudMonitoreo deberia guardar la solicitud en estado REVISION correctamente")
     @Test
@@ -113,6 +122,47 @@ class SolicitudMonitoreoServiceImplTest {
         Assertions.assertThatThrownBy(() -> solicitudMonitoreoService.obtenerSolicitudMonitoreo(UUID_SOLICITUD))
                 .isInstanceOf(SolicitudMonitoreoNoEncontradaException.class)
                 .hasMessageContaining(UUID_SOLICITUD.toString());
+    }
+
+    @DisplayName("Test consultarSolicitudesMonitoreo")
+    @Nested
+    class TestsConsultarSolicitudesMonitoreo {
+
+        @DisplayName("Test parametro nombre debe ser usado para realizar la consulta")
+        @Test
+        void testConsultarSolicitudMonitoreoDeberiaConsultarPorNombre() {
+            // arrange
+            SolicitudMonitoreoConsultaDto consultaDto = SolicitudMonitoreoConsultaDto.builder()
+                    .nombre("Consulta")
+                    .build();
+            Pageable pageable = PageRequest.of(0, 5);
+            when(solicitudMonitoreoRepository.obtenerSolicitudesPor(anyString(), any(Pageable.class)))
+                    .thenReturn(
+                            new PageImpl<>(List.of(SolicitudMonitoreo.builder()
+                                            .id(UUID_SOLICITUD)
+                                            .nombre(NOMBRE_PRODUCTO)
+                                            .estadoSolicitud(EstadoSolicitud.EN_REVISION)
+                                    .build()), pageable, 1)
+                    );
+
+
+            // act
+            Page<SolicitudMonitoreoPageItemDto> pageResponse = solicitudMonitoreoService.consultarSolicitudesMonitoreo(consultaDto, pageable);
+
+            // assert
+            verify(solicitudMonitoreoRepository, times(1))
+                    .obtenerSolicitudesPor(nombreParamCaptor.capture(), any(Pageable.class));
+            Assertions.assertThat(nombreParamCaptor.getValue())
+                    .isNotNull()
+                    .isEqualTo("Consulta");
+            Assertions
+                    .assertThat(pageResponse)
+                    .isNotNull()
+                    .extracting(SolicitudMonitoreoPageItemDto::getId,
+                            SolicitudMonitoreoPageItemDto::getNombreProducto,
+                            SolicitudMonitoreoPageItemDto::getEstado)
+                    .contains(Tuple.tuple(UUID_SOLICITUD.toString(), NOMBRE_PRODUCTO, EstadoSolicitud.EN_REVISION.toString()));
+        }
     }
 
 }

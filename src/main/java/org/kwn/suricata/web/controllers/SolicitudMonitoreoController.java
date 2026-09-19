@@ -12,15 +12,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.kwn.suricata.services.SolicitudMonitoreoService;
 import org.kwn.suricata.web.model.RespuestaError;
-import org.kwn.suricata.web.model.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -28,11 +27,13 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/solicitud-monitoreo")
+@RequestMapping(SolicitudMonitoreoController.BASE_PATH)
 @Tag(name = "Solicitudes de monitoreo", description = "Gestión de solicitudes de monitoreo de precios de productos")
 public class SolicitudMonitoreoController {
 
     private final SolicitudMonitoreoService solicitudMonitoreoService;
+
+    public final static String BASE_PATH = "/solicitud-monitoreo";
 
     @PostMapping
     @Operation(summary = "Crear solicitud de monitoreo",
@@ -49,7 +50,7 @@ public class SolicitudMonitoreoController {
                                                                         UriComponentsBuilder ucb) {
         SolicitudMonitoreoDto solicitudMonitoreoDtoCreada = solicitudMonitoreoService.crearSolicitudMonitoreo(solicitudMonitoreoDto);
         URI location = ucb
-                .path("/solicitud-monitoreo/{id}")
+                .path(BASE_PATH + "/{id}")
                 .buildAndExpand(solicitudMonitoreoDtoCreada.id())
                 .toUri();
 
@@ -75,5 +76,18 @@ public class SolicitudMonitoreoController {
                                                                            UUID id) {
         return ResponseEntity.ok(solicitudMonitoreoService.obtenerSolicitudMonitoreo(id));
     }
+
+    @GetMapping()
+    public ResponseEntity<Page<SolicitudMonitoreoPageItemDto>> obtenerSolicitudesConsulta(@RequestParam(value = "nombre", required = false) String nombre,
+                                                                                          UriComponentsBuilder ucb,
+                                                                                          Pageable pageable) {
+        SolicitudMonitoreoConsultaDto consultaDto = SolicitudMonitoreoConsultaDto.builder().nombre(nombre).build();
+        Page<SolicitudMonitoreoPageItemDto> solicitudMonitoreoConsultaDtoPage = solicitudMonitoreoService.consultarSolicitudesMonitoreo(consultaDto, pageable);
+        ucb.path(BASE_PATH + "/{id}");
+        solicitudMonitoreoConsultaDtoPage.forEach(solicitud -> solicitud.setUri(ucb));
+        return ResponseEntity.ok(solicitudMonitoreoConsultaDtoPage);
+    }
+
+
 
 }

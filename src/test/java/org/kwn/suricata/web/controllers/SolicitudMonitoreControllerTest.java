@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.kwn.suricata.exceptions.SolicitudMonitoreoNoEncontradaException;
 import org.kwn.suricata.models.EstadoSolicitud;
 import org.kwn.suricata.services.SolicitudMonitoreoService;
-import org.kwn.suricata.web.model.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
