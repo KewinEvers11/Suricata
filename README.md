@@ -33,3 +33,64 @@ Para ejecutar el proyecto de forma local, puedes usar Docker.
    ```shell
    ./gradlew bootRun --args='--spring.profiles.active=develop'
    ```
+
+# Ejecutar usando docker compose
+
+Con Docker Compose se puede levantar la aplicación junto con su base de datos PostgreSQL
+en una red interna, sin necesidad de tener PostgreSQL instalado localmente. La
+configuración de ambos contenedores (credenciales, puertos y nombres) vive
+directamente en `docker-compose.yml`.
+
+## Requisitos previos
+
+Para **ejecutar** los servicios necesitas:
+
+* Una herramienta para ejecutar contenedores de Docker (Docker Desktop, Rancher,
+  etc.).
+* La Docker CLI disponible.
+
+Para **generar** la imagen de la aplicación (paso 1) además necesitas:
+
+* **JDK 21**: `bootBuildImage` primero compila el proyecto (`compileJava` →
+  `bootJar`) usando el toolchain de Java 21 configurado en `build.gradle`. El
+  Java que se ejecuta *dentro* de la imagen lo provee el buildpack
+  (BellSoft Liberica JRE 21) y es independiente del JDK local.
+
+## Pasos
+
+1. **Genera la imagen de la aplicación.** ejecutando este comando en el proyecto
+   ```shell
+   ./gradlew bootBuildImage
+   ```
+   Esto produce la imagen `suricata-app:latest`.
+
+2. **Levanta los servicios.** Desde la raíz del proyecto:
+   ```shell
+   docker compose up -d
+   ```
+   Se inician dos contenedores sobre la red interna `suricata-network`:
+   * `suricata-postgres`: la base de datos `postgres:18.6`.
+   * `suricata-app`: la aplicación Spring Boot.
+
+   La aplicación arranca solo cuando PostgreSQL está saludable (healthcheck con
+   `pg_isready`), y Flyway aplica las migraciones automáticamente al iniciar.
+
+3. **Accede a la aplicación.** Una vez levantados los servicios, la API queda
+   disponible en:
+   ```
+   http://localhost:8080/suricata-app
+   ```
+   La documentación Swagger UI en:
+   ```
+   http://localhost:8080/suricata-app/swagger-ui/index.html
+   ```
+
+## Comandos útiles
+
+| Acción | Comando |
+|---|---|
+| Levantar en segundo plano | `docker compose up -d` |
+| Ver logs | `docker compose logs -f` |
+| Detener los contenedores | `docker compose down` |
+| Detener y borrar los datos | `docker compose down -v` |
+| Reconstruir la imagen tras cambios | `./gradlew bootBuildImage && docker compose up -d` |

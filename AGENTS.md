@@ -8,6 +8,8 @@ Suricata: REST API for monitoring product prices. Spring Boot 4.1.1, Java 21, si
 - Single test: `./gradlew test --tests "org.kwn.suricata.services.SolicitudMonitoreoServiceImplTest"`
 - Full check: `./gradlew build` (same as `test` here; no separate lint/typecheck tasks exist).
 - Run locally: `./gradlew bootRun --args='--spring.profiles.active=develop'` — the `develop` profile is required; there is no datasource config in the default `application.yaml`.
+- Build app image: `./gradlew bootBuildImage` — Spring Boot plugin (Cloud Native Buildpacks), no `Dockerfile`; image is `suricata-app:latest` (configured in `build.gradle`).
+- Run full stack: `docker compose up` (after `bootBuildImage`) — starts `suricata-app` plus `postgres:18.6` on the internal `suricata-network`; connection values live in `docker-compose.yml`.
 
 ## Local setup
 
