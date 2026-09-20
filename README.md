@@ -4,6 +4,11 @@ API REST para monitorear precios de productos.
 # Technologies:
 * **Api REST:** Spring Boot 4.1.1
 * **Database:** Postgresql 18.6
+* **Java:** JDK 21
+
+# Requisitos previos
+
+* Tener instalado **JDK 21**. Puedes descargarlo desde [Adoptium Temurin](https://adoptium.net/es/temurin/releases/?version=21).
 
 # Configuración inicial base de datos
 
@@ -16,13 +21,7 @@ Para ejecutar el proyecto de forma local, puedes usar Docker.
 2. Instalar la Docker CLI
 3. Ejecuta el siguiente comando para crear el contenedor con la base de datos configurada según `src/main/resources/application-develop.yaml`:
    ```shell
-   docker run --name suricata-postgres \
-     -e POSTGRES_DB=suricata_app \
-     -e POSTGRES_USER=suricata_appuser \
-     -e POSTGRES_PASSWORD=sur1c4t4 \
-     -p 5432:5432 \
-     -v suricata-pgdata:/var/lib/postgresql \
-     -d postgres:18.6
+   docker run --name suricata-postgres -e POSTGRES_DB=suricata_app -e POSTGRES_USER=suricata_appuser -e POSTGRES_PASSWORD=sur1c4t4 -p 5432:5432 -v suricata-pgdata:/var/lib/postgresql -d postgres:18.6
    ```
 
    > **Nota:** desde PostgreSQL 18, la imagen oficial monta el volumen en `/var/lib/postgresql` (antes era `/var/lib/postgresql/data`). Montar en la ruta antigua provoca errores al iniciar el contenedor.

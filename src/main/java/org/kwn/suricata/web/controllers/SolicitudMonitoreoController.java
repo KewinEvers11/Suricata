@@ -82,7 +82,22 @@ public class SolicitudMonitoreoController {
 
     @GetMapping()
     @Operation(summary="Obtener solicitudes de Monitoreo por Consulta",
-            description = "Obtiene la lista de solicitudes basado en los criterios de búsqueda especificados")
+            description = "Obtiene la lista de solicitudes basado en los criterios de búsqueda especificados",
+            parameters = {
+                    @Parameter(name = "page",
+                            description = "Número de página (inicia en 0)",
+                            example = "0",
+                            schema = @Schema(type = "integer", minimum = "0", defaultValue = "0")),
+                    @Parameter(name = "size",
+                            description = "Cantidad de elementos por página",
+                            example = "5",
+                            schema = @Schema(type = "integer", minimum = "1", defaultValue = "20")),
+                    @Parameter(name = "sort",
+                            description = "Criterio de ordenación con formato: propiedad,(asc|desc). "
+                                    + "Orden ascendente por defecto. Se admiten múltiples criterios.",
+                            example = "nombre,asc",
+                            array = @ArraySchema(schema = @Schema(type = "string")))
+            })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de solicitudes obtenida exitosamente"),
             @ApiResponse(responseCode = "400", description = "Los criterios de búsqueda son inválidos",
@@ -94,6 +109,7 @@ public class SolicitudMonitoreoController {
                                                                                           @Pattern(regexp = "^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ .,_()-]*$", message = "El nombre contiene caracteres no permitidos")
                                                                                           String nombre,
                                                                                           UriComponentsBuilder ucb,
+                                                                                          @Parameter(hidden = true)
                                                                                           Pageable pageable) {
         SolicitudMonitoreoConsultaDto consultaDto = SolicitudMonitoreoConsultaDto.builder().nombre(nombre).build();
         Page<SolicitudMonitoreoPageItemDto> solicitudMonitoreoConsultaDtoPage = solicitudMonitoreoService.consultarSolicitudesMonitoreo(consultaDto, pageable);
