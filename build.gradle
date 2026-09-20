@@ -42,3 +42,10 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Builds an OCI/Docker image from the boot jar using Cloud Native Buildpacks (no Dockerfile).
+// Run with: ./gradlew bootBuildImage
+// Docs: https://docs.spring.io/spring-boot/gradle-plugin/packaging-oci-image.html
+tasks.named('bootBuildImage') {
+	imageName = 'suricata-app:latest'
+}
