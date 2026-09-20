@@ -9,30 +9,34 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.kwn.suricata.services.SolicitudMonitoreoService;
 import org.kwn.suricata.web.model.RespuestaError;
-import org.kwn.suricata.web.model.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Validated
 @RestController
-@RequestMapping("/solicitud-monitoreo")
+@RequestMapping(SolicitudMonitoreoController.BASE_PATH)
 @Tag(name = "Solicitudes de monitoreo", description = "Gestión de solicitudes de monitoreo de precios de productos")
 public class SolicitudMonitoreoController {
 
     private final SolicitudMonitoreoService solicitudMonitoreoService;
+
+    public final static String BASE_PATH = "/solicitud-monitoreo";
 
     @PostMapping
     @Operation(summary = "Crear solicitud de monitoreo",
@@ -49,7 +53,7 @@ public class SolicitudMonitoreoController {
                                                                         UriComponentsBuilder ucb) {
         SolicitudMonitoreoDto solicitudMonitoreoDtoCreada = solicitudMonitoreoService.crearSolicitudMonitoreo(solicitudMonitoreoDto);
         URI location = ucb
-                .path("/solicitud-monitoreo/{id}")
+                .path(BASE_PATH + "/{id}")
                 .buildAndExpand(solicitudMonitoreoDtoCreada.id())
                 .toUri();
 
@@ -75,5 +79,29 @@ public class SolicitudMonitoreoController {
                                                                            UUID id) {
         return ResponseEntity.ok(solicitudMonitoreoService.obtenerSolicitudMonitoreo(id));
     }
+
+    @GetMapping()
+    @Operation(summary="Obtener solicitudes de Monitoreo por Consulta",
+            description = "Obtiene la lista de solicitudes basado en los criterios de búsqueda especificados")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de solicitudes obtenida exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Los criterios de búsqueda son inválidos",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            array = @ArraySchema(schema = @Schema(implementation = RespuestaError.class))))
+    })
+    public ResponseEntity<Page<SolicitudMonitoreoPageItemDto>> obtenerSolicitudesConsulta(@RequestParam(value = "nombre", required = false)
+                                                                                          @Parameter(description = "Filtro por nombre del producto", example = "Nintendo")
+                                                                                          @Pattern(regexp = "^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ .,_()-]*$", message = "El nombre contiene caracteres no permitidos")
+                                                                                          String nombre,
+                                                                                          UriComponentsBuilder ucb,
+                                                                                          Pageable pageable) {
+        SolicitudMonitoreoConsultaDto consultaDto = SolicitudMonitoreoConsultaDto.builder().nombre(nombre).build();
+        Page<SolicitudMonitoreoPageItemDto> solicitudMonitoreoConsultaDtoPage = solicitudMonitoreoService.consultarSolicitudesMonitoreo(consultaDto, pageable);
+        ucb.path(BASE_PATH + "/{id}");
+        solicitudMonitoreoConsultaDtoPage.forEach(solicitud -> solicitud.setUri(ucb));
+        return ResponseEntity.ok(solicitudMonitoreoConsultaDtoPage);
+    }
+
+
 
 }

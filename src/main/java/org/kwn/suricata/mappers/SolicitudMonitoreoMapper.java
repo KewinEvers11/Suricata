@@ -1,11 +1,12 @@
 package org.kwn.suricata.mappers;
 
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.kwn.suricata.models.SolicitudMonitoreo;
 
-import org.kwn.suricata.web.model.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING,
         imports = {MapperUtils.class}
@@ -23,5 +24,9 @@ public interface SolicitudMonitoreoMapper {
     @Mapping(source="estadoSolicitud", target="estado")
     @Mapping(expression="java(MapperUtils.uuidToString(solicitudMonitoreo.getId()))", target="id")
     SolicitudMonitoreoDto toDto(SolicitudMonitoreo solicitudMonitoreo);
+
+    @Mapping(source="nombre", target="nombreProducto")
+    @Mapping(source="estadoSolicitud", target="estado")
+    SolicitudMonitoreoPageItemDto toPageItem(SolicitudMonitoreo solicitudMonitoreo);
 
 }

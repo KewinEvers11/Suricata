@@ -3,10 +3,11 @@ package org.kwn.suricata.mappers;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
 import org.mapstruct.factory.Mappers;
 import org.kwn.suricata.models.EstadoSolicitud;
 import org.kwn.suricata.models.SolicitudMonitoreo;
-import org.kwn.suricata.web.model.SolicitudMonitoreoDto;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 
 import java.util.UUID;
 
@@ -86,6 +87,25 @@ class SolicitudMonitoreoMapperTest {
                         URL_PRODUCTO,
                         NOMBRE_USUARIO,
                         EstadoSolicitud.EN_REVISION.toString()
+                );
+    }
+
+    @Test
+    @DisplayName("Should map necessary fields for item")
+    void testToPageItem() {
+        SolicitudMonitoreo solicitudMonitoreo = SolicitudMonitoreo.builder()
+                .id(TEST_UUID)
+                .nombre(NOMBRE_PRODUCTO)
+                .estadoSolicitud(EstadoSolicitud.RECHAZADA)
+                .build();
+        SolicitudMonitoreoPageItemDto pageItem = solicitudMonitoreoMapper.toPageItem(solicitudMonitoreo);
+        Assertions
+                .assertThat(pageItem)
+                .extracting(SolicitudMonitoreoPageItemDto::getId,
+                        SolicitudMonitoreoPageItemDto::getNombreProducto,
+                        SolicitudMonitoreoPageItemDto::getEstado)
+                .contains(
+                        TEST_UUID.toString(), NOMBRE_PRODUCTO, EstadoSolicitud.RECHAZADA.toString()
                 );
     }
 

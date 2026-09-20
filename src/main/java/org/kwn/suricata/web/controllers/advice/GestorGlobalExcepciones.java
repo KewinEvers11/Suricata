@@ -1,5 +1,6 @@
 package org.kwn.suricata.web.controllers.advice;
 
+import jakarta.validation.ConstraintViolationException;
 import org.kwn.suricata.exceptions.SolicitudMonitoreoNoEncontradaException;
 import org.kwn.suricata.web.model.RespuestaError;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,15 @@ public class GestorGlobalExcepciones {
         List<RespuestaError> errores = ex.getBindingResult().getFieldErrors().stream()
                 .sorted(Comparator.comparing(FieldError::getField))
                 .map(error -> new RespuestaError(error.getDefaultMessage(), HttpStatus.BAD_REQUEST.getReasonPhrase()))
+                .toList();
+
+        return ResponseEntity.badRequest().body(errores);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<List<RespuestaError>> manejarViolacionDeRestricciones(ConstraintViolationException ex) {
+        List<RespuestaError> errores = ex.getConstraintViolations().stream()
+                .map(violacion -> new RespuestaError(violacion.getMessage(), HttpStatus.BAD_REQUEST.getReasonPhrase()))
                 .toList();
 
         return ResponseEntity.badRequest().body(errores);
