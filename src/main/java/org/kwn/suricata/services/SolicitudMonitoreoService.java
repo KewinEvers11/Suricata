@@ -1,5 +1,6 @@
 package org.kwn.suricata.services;
 
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoActualizacionDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
@@ -13,6 +14,8 @@ public interface SolicitudMonitoreoService {
     SolicitudMonitoreoDto crearSolicitudMonitoreo(SolicitudMonitoreoDto solicitudMonitoreo);
 
     SolicitudMonitoreoDto obtenerSolicitudMonitoreo(UUID id);
+
+    SolicitudMonitoreoDto actualizarSolicitudMonitoreo(UUID id, SolicitudMonitoreoActualizacionDto actualizacionDto);
 
     Page<SolicitudMonitoreoPageItemDto> consultarSolicitudesMonitoreo(SolicitudMonitoreoConsultaDto consultaDto,
                                                               Pageable pageable);

@@ -11,6 +11,7 @@ import org.kwn.suricata.mappers.SolicitudMonitoreoMapper;
 import org.kwn.suricata.models.EstadoSolicitud;
 import org.kwn.suricata.models.SolicitudMonitoreo;
 import org.kwn.suricata.repositories.SolicitudMonitoreoRepository;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoActualizacionDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
@@ -33,8 +34,11 @@ import static org.mockito.Mockito.*;
 class SolicitudMonitoreoServiceImplTest {
 
     public static final String NOMBRE_PRODUCTO = "RTX 5090";
+    public static final String NOMBRE_PRODUCTO_ACTUALIZADO = "RTX 5080";
     public static final String URL_PRODUCTO = "http://productos.com/203";
     public static final String NOMBRE_DE_USUARIO = "Kazuma";
+    public static final String REVISOR = "Aqua";
+    public static final String REVISOR_ACTUALIZADO = "Megumin";
     public static final UUID UUID_SOLICITUD = UUID.randomUUID();
     @Mock
     SolicitudMonitoreoRepository solicitudMonitoreoRepository;
@@ -72,7 +76,7 @@ class SolicitudMonitoreoServiceImplTest {
                 .extracting(SolicitudMonitoreoDto::id,
                         SolicitudMonitoreoDto::nombreProducto,
                         SolicitudMonitoreoDto::estado)
-                .contains(
+                .containsExactly(
                         UUID_SOLICITUD.toString(),
                         NOMBRE_PRODUCTO,
                         EstadoSolicitud.EN_REVISION.toString()
@@ -103,7 +107,7 @@ class SolicitudMonitoreoServiceImplTest {
                         SolicitudMonitoreoDto::urlProducto,
                         SolicitudMonitoreoDto::nombreDeUsuario,
                         SolicitudMonitoreoDto::estado)
-                .contains(
+                .containsExactly(
                         UUID_SOLICITUD.toString(),
                         NOMBRE_PRODUCTO,
                         URL_PRODUCTO,
@@ -161,7 +165,146 @@ class SolicitudMonitoreoServiceImplTest {
                     .extracting(SolicitudMonitoreoPageItemDto::getId,
                             SolicitudMonitoreoPageItemDto::getNombreProducto,
                             SolicitudMonitoreoPageItemDto::getEstado)
-                    .contains(Tuple.tuple(UUID_SOLICITUD.toString(), NOMBRE_PRODUCTO, EstadoSolicitud.EN_REVISION.toString()));
+                    .containsExactly(Tuple.tuple(UUID_SOLICITUD.toString(), NOMBRE_PRODUCTO, EstadoSolicitud.EN_REVISION.toString()));
+        }
+    }
+
+    @DisplayName("Test actualizarSolicitudMonitoreo")
+    @Nested
+    class TestsActualizarSolicitudMonitoreo {
+
+        private SolicitudMonitoreo solicitudExistente() {
+            return SolicitudMonitoreo.builder()
+                    .id(UUID_SOLICITUD)
+                    .nombre(NOMBRE_PRODUCTO)
+                    .urlProducto(URL_PRODUCTO)
+                    .nombreUsuario(NOMBRE_DE_USUARIO)
+                    .revisor(REVISOR)
+                    .estadoSolicitud(EstadoSolicitud.EN_REVISION)
+                    .build();
+        }
+
+        @DisplayName("Debería actualizar solo el nombre cuando el revisor no se envía")
+        @Test
+        void testActualizarSolicitudMonitoreoSoloNombre() {
+            // arrange
+            SolicitudMonitoreo solicitud = solicitudExistente();
+            when(solicitudMonitoreoRepository.findById(UUID_SOLICITUD)).thenReturn(Optional.of(solicitud));
+            when(solicitudMonitoreoRepository.save(any(SolicitudMonitoreo.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            SolicitudMonitoreoActualizacionDto actualizacionDto = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                    .build();
+
+            // act
+            SolicitudMonitoreoDto response = solicitudMonitoreoService.actualizarSolicitudMonitoreo(UUID_SOLICITUD, actualizacionDto);
+
+            // assert
+            Assertions.assertThat(response)
+                    .isNotNull()
+                    .extracting(SolicitudMonitoreoDto::id,
+                            SolicitudMonitoreoDto::nombreProducto,
+                            SolicitudMonitoreoDto::revisor,
+                            SolicitudMonitoreoDto::urlProducto,
+                            SolicitudMonitoreoDto::nombreDeUsuario,
+                            SolicitudMonitoreoDto::estado)
+                    .containsExactly(
+                            UUID_SOLICITUD.toString(),
+                            NOMBRE_PRODUCTO_ACTUALIZADO,
+                            REVISOR,
+                            URL_PRODUCTO,
+                            NOMBRE_DE_USUARIO,
+                            EstadoSolicitud.EN_REVISION.toString()
+                    );
+        }
+
+        @DisplayName("Debería actualizar solo el revisor cuando el nombre no se envía")
+        @Test
+        void testActualizarSolicitudMonitoreoSoloRevisor() {
+            // arrange
+            SolicitudMonitoreo solicitud = solicitudExistente();
+            when(solicitudMonitoreoRepository.findById(UUID_SOLICITUD)).thenReturn(Optional.of(solicitud));
+            when(solicitudMonitoreoRepository.save(any(SolicitudMonitoreo.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            SolicitudMonitoreoActualizacionDto actualizacionDto = SolicitudMonitoreoActualizacionDto.builder()
+                    .revisor(REVISOR_ACTUALIZADO)
+                    .build();
+
+            // act
+            SolicitudMonitoreoDto response = solicitudMonitoreoService.actualizarSolicitudMonitoreo(UUID_SOLICITUD, actualizacionDto);
+
+            // assert
+            Assertions.assertThat(response)
+                    .isNotNull()
+                    .extracting(SolicitudMonitoreoDto::nombreProducto,
+                            SolicitudMonitoreoDto::revisor,
+                            SolicitudMonitoreoDto::estado)
+                    .containsExactly(
+                            NOMBRE_PRODUCTO,
+                            REVISOR_ACTUALIZADO,
+                            EstadoSolicitud.EN_REVISION.toString()
+                    );
+        }
+
+        @DisplayName("Debería actualizar nombre y revisor cuando ambos se envían")
+        @Test
+        void testActualizarSolicitudMonitoreoNombreYRevisor() {
+            // arrange
+            SolicitudMonitoreo solicitud = solicitudExistente();
+            when(solicitudMonitoreoRepository.findById(UUID_SOLICITUD)).thenReturn(Optional.of(solicitud));
+            when(solicitudMonitoreoRepository.save(any(SolicitudMonitoreo.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            SolicitudMonitoreoActualizacionDto actualizacionDto = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                    .revisor(REVISOR_ACTUALIZADO)
+                    .build();
+
+            // act
+            SolicitudMonitoreoDto response = solicitudMonitoreoService.actualizarSolicitudMonitoreo(UUID_SOLICITUD, actualizacionDto);
+
+            // assert
+            Assertions.assertThat(response)
+                    .isNotNull()
+                    .extracting(SolicitudMonitoreoDto::nombreProducto,
+                            SolicitudMonitoreoDto::revisor)
+                    .containsExactly(NOMBRE_PRODUCTO_ACTUALIZADO, REVISOR_ACTUALIZADO);
+        }
+
+        @DisplayName("Debería limpiar el revisor cuando se envía una cadena vacía")
+        @Test
+        void testActualizarSolicitudMonitoreoLimpiarRevisor() {
+            // arrange
+            SolicitudMonitoreo solicitud = solicitudExistente();
+            when(solicitudMonitoreoRepository.findById(UUID_SOLICITUD)).thenReturn(Optional.of(solicitud));
+            when(solicitudMonitoreoRepository.save(any(SolicitudMonitoreo.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            SolicitudMonitoreoActualizacionDto actualizacionDto = SolicitudMonitoreoActualizacionDto.builder()
+                    .revisor("")
+                    .build();
+
+            // act
+            SolicitudMonitoreoDto response = solicitudMonitoreoService.actualizarSolicitudMonitoreo(UUID_SOLICITUD, actualizacionDto);
+
+            // assert
+            Assertions.assertThat(response).isNotNull();
+            Assertions.assertThat(response.revisor()).isNull();
+            Assertions.assertThat(response.nombreProducto()).isEqualTo(NOMBRE_PRODUCTO);
+        }
+
+        @DisplayName("Debería lanzar excepción cuando la solicitud no existe")
+        @Test
+        void testActualizarSolicitudMonitoreoNoExistente() {
+            // arrange
+            when(solicitudMonitoreoRepository.findById(UUID_SOLICITUD)).thenReturn(Optional.empty());
+            SolicitudMonitoreoActualizacionDto actualizacionDto = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                    .build();
+
+            // act / assert
+            Assertions.assertThatThrownBy(() -> solicitudMonitoreoService.actualizarSolicitudMonitoreo(UUID_SOLICITUD, actualizacionDto))
+                    .isInstanceOf(SolicitudMonitoreoNoEncontradaException.class)
+                    .hasMessageContaining(UUID_SOLICITUD.toString());
+            verify(solicitudMonitoreoRepository, never()).save(any(SolicitudMonitoreo.class));
         }
     }
 

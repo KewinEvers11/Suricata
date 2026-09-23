@@ -22,6 +22,9 @@ public record SolicitudMonitoreoDto(
         @Schema(description = "Estado actual de la solicitud de monitoreo",
                 allowableValues = {"EN_REVISION", "ACEPTADA", "RECHAZADA"},
                 accessMode = Schema.AccessMode.READ_ONLY)
-        String estado
+        String estado,
+        @Schema(description = "Nombre del revisor que evalúa la solicitud", example = "jperez",
+                accessMode = Schema.AccessMode.READ_ONLY)
+        String revisor
 ) {
 }
