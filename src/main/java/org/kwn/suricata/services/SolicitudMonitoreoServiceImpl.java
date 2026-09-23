@@ -6,6 +6,7 @@ import org.kwn.suricata.mappers.SolicitudMonitoreoMapper;
 import org.kwn.suricata.models.EstadoSolicitud;
 import org.kwn.suricata.models.SolicitudMonitoreo;
 import org.kwn.suricata.repositories.SolicitudMonitoreoRepository;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoActualizacionDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +40,17 @@ public class SolicitudMonitoreoServiceImpl implements SolicitudMonitoreoService{
         SolicitudMonitoreo solicitudMonitoreo = solicitudMonitoreoRepository.findById(id)
                 .orElseThrow(() -> new SolicitudMonitoreoNoEncontradaException(id));
         return solicitudMonitoreoMapper.toDto(solicitudMonitoreo);
+    }
+
+    @Override
+    @Transactional
+    public SolicitudMonitoreoDto actualizarSolicitudMonitoreo(UUID id,
+                                                              SolicitudMonitoreoActualizacionDto actualizacionDto) {
+        SolicitudMonitoreo solicitudMonitoreo = solicitudMonitoreoRepository.findById(id)
+                .orElseThrow(() -> new SolicitudMonitoreoNoEncontradaException(id));
+        solicitudMonitoreoMapper.actualizarEntidad(actualizacionDto, solicitudMonitoreo);
+        SolicitudMonitoreo solicitudMonitoreoActualizada = solicitudMonitoreoRepository.save(solicitudMonitoreo);
+        return solicitudMonitoreoMapper.toDto(solicitudMonitoreoActualizada);
     }
 
     @Override

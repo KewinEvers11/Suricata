@@ -11,6 +11,7 @@ import org.kwn.suricata.configuration.WebApplicationTest;
 import org.kwn.suricata.exceptions.SolicitudMonitoreoNoEncontradaException;
 import org.kwn.suricata.models.EstadoSolicitud;
 import org.kwn.suricata.services.SolicitudMonitoreoService;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoActualizacionDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +35,7 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -61,6 +64,8 @@ class SolicitudMonitoreoControllerTest {
 
     static final String TIPO_ERROR_BAD_REQUEST = "Bad Request";
 
+    static final String TIPO_ERROR_CONFLICT = "Conflict";
+
     static final String MENSAJE_NOMBRE_PRODUCTO_NULO = "El nombre del producto no puede ser nulo";
 
     static final String MENSAJE_NOMBRE_PRODUCTO_TAMANO = "El nombre del producto tiene que tener mínimo (1) carácter y máximo (255) caracteres";
@@ -70,6 +75,11 @@ class SolicitudMonitoreoControllerTest {
     static final String MENSAJE_NOMBRE_USUARIO_TAMANO = "El nombre del usuario no puede ser mayor a 255 caracteres";
 
     static final String MENSAJE_NOMBRE_CONSULTA_INVALIDO = "El nombre contiene caracteres no permitidos";
+
+    static final String NOMBRE_PRODUCTO_ACTUALIZADO = "RTX 5080";
+    static final String REVISOR = "jperez";
+
+    static final String MENSAJE_REVISOR_TAMANO = "El nombre del revisor no puede ser mayor a 255 caracteres";
 
     @Nested
     @DisplayName("Tests crear solicitud productos")
@@ -394,6 +404,155 @@ class SolicitudMonitoreoControllerTest {
                     .andExpect(jsonPath("$[0].tipoDeError").value(TIPO_ERROR_BAD_REQUEST));
 
             verifyNoInteractions(solicitudMonitoreoService);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Tests actualizar solicitud de monitoreo")
+    class testActualizarSolicitudDeMonitoreo {
+
+        @DisplayName("Debería retornar OK con la solicitud actualizada cuando el request es correcto.")
+        @Test
+        void testActualizarSolicitudDeMonitoreo() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            when(solicitudMonitoreoService.actualizarSolicitudMonitoreo(any(UUID.class), any(SolicitudMonitoreoActualizacionDto.class)))
+                    .thenReturn(SolicitudMonitoreoDto.builder()
+                            .id(ID_SOLICITUD)
+                            .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                            .urlProducto(URL_PRODUCTO)
+                            .nombreDeUsuario(NOMBRE_DE_USUARIO)
+                            .estado(EstadoSolicitud.EN_REVISION.toString())
+                            .revisor(REVISOR)
+                            .build());
+
+            SolicitudMonitoreoActualizacionDto actualizacion = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                    .revisor(REVISOR)
+                    .build();
+
+            // act / assert
+            mockMvc.perform(patch(ENDPOINT + "/{id}", idSolicitud)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(actualizacion))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(ID_SOLICITUD))
+                    .andExpect(jsonPath("$.nombreProducto").value(NOMBRE_PRODUCTO_ACTUALIZADO))
+                    .andExpect(jsonPath("$.revisor").value(REVISOR))
+                    .andExpect(jsonPath("$.estado").value(EstadoSolicitud.EN_REVISION.toString()));
+        }
+
+        @DisplayName("Debería retornar BAD_REQUEST cuando el nombre del producto está vacío.")
+        @Test
+        void testActualizarSolicitudNombreProductoVacioRetornaBadRequest() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            SolicitudMonitoreoActualizacionDto actualizacion = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto("")
+                    .build();
+
+            // act / assert
+            mockMvc.perform(patch(ENDPOINT + "/{id}", idSolicitud)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(actualizacion))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].mensaje").value(MENSAJE_NOMBRE_PRODUCTO_TAMANO))
+                    .andExpect(jsonPath("$[0].tipoDeError").value(TIPO_ERROR_BAD_REQUEST));
+
+            verifyNoInteractions(solicitudMonitoreoService);
+        }
+
+        @DisplayName("Debería retornar BAD_REQUEST cuando el nombre del producto excede 255 caracteres.")
+        @Test
+        void testActualizarSolicitudNombreProductoDemasiadoLargoRetornaBadRequest() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            SolicitudMonitoreoActualizacionDto actualizacion = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(CADENA_256_CARACTERES)
+                    .build();
+
+            // act / assert
+            mockMvc.perform(patch(ENDPOINT + "/{id}", idSolicitud)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(actualizacion))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].mensaje").value(MENSAJE_NOMBRE_PRODUCTO_TAMANO))
+                    .andExpect(jsonPath("$[0].tipoDeError").value(TIPO_ERROR_BAD_REQUEST));
+
+            verifyNoInteractions(solicitudMonitoreoService);
+        }
+
+        @DisplayName("Debería retornar BAD_REQUEST cuando el revisor excede 255 caracteres.")
+        @Test
+        void testActualizarSolicitudRevisorDemasiadoLargoRetornaBadRequest() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            SolicitudMonitoreoActualizacionDto actualizacion = SolicitudMonitoreoActualizacionDto.builder()
+                    .revisor(CADENA_256_CARACTERES)
+                    .build();
+
+            // act / assert
+            mockMvc.perform(patch(ENDPOINT + "/{id}", idSolicitud)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(actualizacion))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].mensaje").value(MENSAJE_REVISOR_TAMANO))
+                    .andExpect(jsonPath("$[0].tipoDeError").value(TIPO_ERROR_BAD_REQUEST));
+
+            verifyNoInteractions(solicitudMonitoreoService);
+        }
+
+        @DisplayName("Debería retornar CONFLICT cuando hay un conflicto de concurrencia.")
+        @Test
+        void testActualizarSolicitudDeMonitoreoConConflictoRetornaConflict() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            when(solicitudMonitoreoService.actualizarSolicitudMonitoreo(any(UUID.class), any(SolicitudMonitoreoActualizacionDto.class)))
+                    .thenThrow(new ObjectOptimisticLockingFailureException(SolicitudMonitoreoDto.class, idSolicitud));
+            SolicitudMonitoreoActualizacionDto actualizacion = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                    .build();
+
+            // act / assert
+            mockMvc.perform(patch(ENDPOINT + "/{id}", idSolicitud)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(actualizacion))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isConflict())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.mensaje").value("La solicitud fue modificada por otra petición, vuelva a intentarlo"))
+                    .andExpect(jsonPath("$.tipoDeError").value(TIPO_ERROR_CONFLICT));
+        }
+
+        @DisplayName("Debería retornar NOT_FOUND cuando la solicitud no existe.")
+        @Test
+        void testActualizarSolicitudDeMonitoreoNoExistenteRetornaNotFound() throws Exception {
+            // arrange
+            UUID idSolicitud = UUID.fromString(ID_SOLICITUD);
+            when(solicitudMonitoreoService.actualizarSolicitudMonitoreo(any(UUID.class), any(SolicitudMonitoreoActualizacionDto.class)))
+                    .thenThrow(new SolicitudMonitoreoNoEncontradaException(idSolicitud));
+            SolicitudMonitoreoActualizacionDto actualizacion = SolicitudMonitoreoActualizacionDto.builder()
+                    .nombreProducto(NOMBRE_PRODUCTO_ACTUALIZADO)
+                    .build();
+
+            // act / assert
+            mockMvc.perform(patch(ENDPOINT + "/{id}", idSolicitud)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(actualizacion))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.mensaje").value("La solicitud de monitoreo con id '" + ID_SOLICITUD + "' no existe"))
+                    .andExpect(jsonPath("$.tipoDeError").value("Not Found"));
         }
 
     }

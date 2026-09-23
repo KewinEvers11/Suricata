@@ -3,6 +3,7 @@ package org.kwn.suricata.web.controllers.advice;
 import jakarta.validation.ConstraintViolationException;
 import org.kwn.suricata.exceptions.SolicitudMonitoreoNoEncontradaException;
 import org.kwn.suricata.web.model.RespuestaError;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -39,5 +40,12 @@ public class GestorGlobalExcepciones {
     public ResponseEntity<RespuestaError> manejarSolicitudNoEncontrada(SolicitudMonitoreoNoEncontradaException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new RespuestaError(ex.getMessage(), HttpStatus.NOT_FOUND.getReasonPhrase()));
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<RespuestaError> manejarConflictoDeConcurrencia(OptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new RespuestaError("La solicitud fue modificada por otra petición, vuelva a intentarlo",
+                        HttpStatus.CONFLICT.getReasonPhrase()));
     }
 }

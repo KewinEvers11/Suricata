@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.kwn.suricata.services.SolicitudMonitoreoService;
 import org.kwn.suricata.web.model.RespuestaError;
+import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoActualizacionDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoConsultaDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoDto;
 import org.kwn.suricata.web.model.solicitudes.monitores.SolicitudMonitoreoPageItemDto;
@@ -78,6 +79,28 @@ public class SolicitudMonitoreoController {
                                                                                    example = "018e5a0f-0b2f-7b1e-8000-000000000000")
                                                                            UUID id) {
         return ResponseEntity.ok(solicitudMonitoreoService.obtenerSolicitudMonitoreo(id));
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Actualizar parcialmente solicitud de monitoreo",
+            description = "Actualiza el nombre del producto y/o el revisor de una solicitud de monitoreo existente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Solicitud actualizada exitosamente",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = SolicitudMonitoreoDto.class))),
+            @ApiResponse(responseCode = "400", description = "Los datos de la actualización son inválidos",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            array = @ArraySchema(schema = @Schema(implementation = RespuestaError.class)))),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RespuestaError.class)))
+    })
+    public ResponseEntity<SolicitudMonitoreoDto> actualizarSolicitudMonitoreo(@PathVariable
+                                                                              @Parameter(description = "Identificador único de la solicitud de monitoreo",
+                                                                                      example = "018e5a0f-0b2f-7b1e-8000-000000000000")
+                                                                              UUID id,
+                                                                              @RequestBody @Valid SolicitudMonitoreoActualizacionDto actualizacionDto) {
+        return ResponseEntity.ok(solicitudMonitoreoService.actualizarSolicitudMonitoreo(id, actualizacionDto));
     }
 
     @GetMapping()

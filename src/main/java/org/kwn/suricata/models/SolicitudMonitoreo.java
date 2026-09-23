@@ -43,12 +43,13 @@ public class SolicitudMonitoreo extends EntidadBase {
     public SolicitudMonitoreo(UUID id,
                               LocalDateTime created_at,
                               LocalDateTime updated_at,
+                              Long version,
                               String nombre,
                               String urlProducto,
                               String nombreUsuario,
                               String revisor,
                               EstadoSolicitud estadoSolicitud) {
-        super(id, created_at, updated_at);
+        super(id, created_at, updated_at, version);
         this.nombre = nombre;
         this.urlProducto = urlProducto;
         this.nombreUsuario = nombreUsuario;
