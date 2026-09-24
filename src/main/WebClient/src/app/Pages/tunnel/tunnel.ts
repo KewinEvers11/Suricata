@@ -5,4 +5,4 @@ import { Component } from '@angular/core';
   imports: [],
   templateUrl: './tunnel.html',
 })
-export class Tunnel {}
+export default class Tunnel {}
