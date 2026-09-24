@@ -14,7 +14,7 @@ API REST para monitorear precios de productos.
 
 Descargar Postgresql 18.6. 
 
-## Instalación usando docker.
+## Instalación local para usar docker
 
 Para ejecutar el proyecto de forma local, puedes usar Docker.
 1. Debes instalar una herramienta para ejecutar contenedores de Docker, puede ser docker desktop, rancher, etc.
@@ -34,7 +34,7 @@ Para ejecutar el proyecto de forma local, puedes usar Docker.
    ./gradlew bootRun --args='--spring.profiles.active=develop'
    ```
 
-# Ejecutar usando docker compose
+# Ejecutar usando docker compose LOCAL
 
 Con Docker Compose se puede levantar la aplicación junto con su base de datos PostgreSQL
 en una red interna, sin necesidad de tener PostgreSQL instalado localmente. La
