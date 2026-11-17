@@ -1,0 +1,1 @@
+DELETE FROM solicitud_monitoreo;

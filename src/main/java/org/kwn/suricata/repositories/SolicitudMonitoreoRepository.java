@@ -15,7 +15,7 @@ public interface SolicitudMonitoreoRepository extends JpaRepository<SolicitudMon
     @Query(value ="SELECT solicitud " +
             "FROM SolicitudMonitoreo solicitud " +
             "WHERE (:nombre IS NULL OR solicitud.nombre LIKE %:nombre%)",
-            countQuery = "SELECT solicitud FROM SolicitudMonitoreo solicitud " +
+            countQuery = "SELECT COUNT(solicitud) FROM SolicitudMonitoreo solicitud " +
                     "WHERE :nombre IS NULL OR solicitud.nombre LIKE %:nombre%"
     )
     Page<SolicitudMonitoreo> obtenerSolicitudesPor(
